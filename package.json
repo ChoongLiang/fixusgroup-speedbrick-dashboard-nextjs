@@ -1,9 +1,9 @@
 {
-  "name": "material-kit-react",
-  "version": "3.0.0",
-  "author": "Devias",
+  "name": "fixusgroup-speedbrick-dashboard-nextjs",
+  "version": "0.0.1",
+  "author": "Thomas Tan",
   "licence": "MIT",
-  "homepage": "https://devias.io",
+  "homepage": "https://fixusgroup.com",
   "private": false,
   "scripts": {
     "dev": "next",
@@ -25,6 +25,7 @@
     "@mui/x-date-pickers": "5.0.19",
     "apexcharts": "3.37.0",
     "date-fns": "2.29.3",
+    "firebase": "^9.21.0",
     "formik": "2.2.9",
     "next": "13.1.6",
     "nprogress": "0.2.0",
@@ -40,8 +41,6 @@
     "@types/nprogress": "0.2.0",
     "@types/numeral": "2.0.2",
     "@types/react": "18.0.28",
-    "@types/react-dom": "18.0.11",
-    "eslint": "8.34.0",
-    "eslint-config-next": "13.1.6"
+    "@types/react-dom": "18.0.11"
   }
 }
