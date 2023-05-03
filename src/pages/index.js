@@ -1,257 +1,14 @@
-import { useCallback, useMemo, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import Head from "next/head";
-import { subDays, subHours } from "date-fns";
 import ArrowPathIcon from "@heroicons/react/24/solid/ArrowPathIcon";
 import { Box, Button, Container, Stack, SvgIcon, Typography } from "@mui/material";
-import { useSelection } from "src/hooks/use-selection";
 import { Layout as DashboardLayout } from "src/layouts/dashboard/layout";
 import { CustomersTable } from "src/sections/customer/customers-table";
 import { CustomersSearch } from "src/sections/customer/customers-search";
-import { applyPagination } from "src/utils/apply-pagination";
 import { getDocs, limit, collection, onSnapshot, where, query, orderBy } from "firebase/firestore";
 import { db } from "src/firebase/firebase";
 
-const now = new Date();
-
-const data = [
-  {
-    id: "5e887ac47eed253091be10cb",
-    address: {
-      city: "Cleveland",
-      country: "USA",
-      state: "Ohio",
-      street: "2849 Fulton Street",
-    },
-    avatar: "/assets/avatars/avatar-carson-darrin.png",
-    createdAt: subDays(subHours(now, 7), 1).getTime(),
-    email: "carson.darrin@devias.io",
-    name: "Carson Darrin",
-    phone: "304-428-3097",
-  },
-  {
-    id: "5e887b209c28ac3dd97f6db5",
-    address: {
-      city: "Atlanta",
-      country: "USA",
-      state: "Georgia",
-      street: "1865  Pleasant Hill Road",
-    },
-    avatar: "/assets/avatars/avatar-fran-perez.png",
-    createdAt: subDays(subHours(now, 1), 2).getTime(),
-    email: "fran.perez@devias.io",
-    name: "Fran Perez",
-    phone: "712-351-5711",
-  },
-  {
-    id: "5e887b7602bdbc4dbb234b27",
-    address: {
-      city: "North Canton",
-      country: "USA",
-      state: "Ohio",
-      street: "4894  Lakeland Park Drive",
-    },
-    avatar: "/assets/avatars/avatar-jie-yan-song.png",
-    createdAt: subDays(subHours(now, 4), 2).getTime(),
-    email: "jie.yan.song@devias.io",
-    name: "Jie Yan Song",
-    phone: "770-635-2682",
-  },
-  {
-    id: "5e86809283e28b96d2d38537",
-    address: {
-      city: "Madrid",
-      country: "Spain",
-      name: "Anika Visser",
-      street: "4158  Hedge Street",
-    },
-    avatar: "/assets/avatars/avatar-anika-visser.png",
-    createdAt: subDays(subHours(now, 11), 2).getTime(),
-    email: "anika.visser@devias.io",
-    name: "Anika Visser",
-    phone: "908-691-3242",
-  },
-  {
-    id: "5e86805e2bafd54f66cc95c3",
-    address: {
-      city: "San Diego",
-      country: "USA",
-      state: "California",
-      street: "75247",
-    },
-    avatar: "/assets/avatars/avatar-miron-vitold.png",
-    createdAt: subDays(subHours(now, 7), 3).getTime(),
-    email: "miron.vitold@devias.io",
-    name: "Miron Vitold",
-    phone: "972-333-4106",
-  },
-  {
-    id: "5e887a1fbefd7938eea9c981",
-    address: {
-      city: "Berkeley",
-      country: "USA",
-      state: "California",
-      street: "317 Angus Road",
-    },
-    avatar: "/assets/avatars/avatar-penjani-inyene.png",
-    createdAt: subDays(subHours(now, 5), 4).getTime(),
-    email: "penjani.inyene@devias.io",
-    name: "Penjani Inyene",
-    phone: "858-602-3409",
-  },
-  {
-    id: "5e887d0b3d090c1b8f162003",
-    address: {
-      city: "Carson City",
-      country: "USA",
-      state: "Nevada",
-      street: "2188  Armbrester Drive",
-    },
-    avatar: "/assets/avatars/avatar-omar-darboe.png",
-    createdAt: subDays(subHours(now, 15), 4).getTime(),
-    email: "omar.darobe@devias.io",
-    name: "Omar Darobe",
-    phone: "415-907-2647",
-  },
-  {
-    id: "5e88792be2d4cfb4bf0971d9",
-    address: {
-      city: "Los Angeles",
-      country: "USA",
-      state: "California",
-      street: "1798  Hickory Ridge Drive",
-    },
-    avatar: "/assets/avatars/avatar-siegbert-gottfried.png",
-    createdAt: subDays(subHours(now, 2), 5).getTime(),
-    email: "siegbert.gottfried@devias.io",
-    name: "Siegbert Gottfried",
-    phone: "702-661-1654",
-  },
-  {
-    id: "5e8877da9a65442b11551975",
-    address: {
-      city: "Murray",
-      country: "USA",
-      state: "Utah",
-      street: "3934  Wildrose Lane",
-    },
-    avatar: "/assets/avatars/avatar-iulia-albu.png",
-    createdAt: subDays(subHours(now, 8), 6).getTime(),
-    email: "iulia.albu@devias.io",
-    name: "Iulia Albu",
-    phone: "313-812-8947",
-  },
-  {
-    id: "5e8680e60cba5019c5ca6fda",
-    address: {
-      city: "Salt Lake City",
-      country: "USA",
-      state: "Utah",
-      street: "368 Lamberts Branch Road",
-    },
-    avatar: "/assets/avatars/avatar-nasimiyu-danai.png",
-    createdAt: subDays(subHours(now, 1), 9).getTime(),
-    email: "nasimiyu.danai@devias.io",
-    name: "Nasimiyu Danai",
-    phone: "801-301-7894",
-  },
-];
-
-const useCustomers = (page, rowsPerPage) => {
-  return useMemo(() => {
-    return applyPagination(data, page, rowsPerPage);
-  }, [page, rowsPerPage]);
-};
-
-const useCustomerIds = (customers) => {
-  return useMemo(() => {
-    return customers.map((customer) => customer.id);
-  }, [customers]);
-};
-
-const Page = () => {
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
-  const customers = useCustomers(page, rowsPerPage);
-  const customersIds = useCustomerIds(customers);
-  const customersSelection = useSelection(customersIds);
-
-  const [data, setData] = useState([]);
-
-  useEffect(() => {
-    const COMPANY_LIST = ["fixus", "absb", "ilsb", "prsb", "jmsb"];
-    const loadData = () => {
-      const projectNameFilter = "TEST 01";
-      const unsubscribes = [];
-
-      const fetchLatestFinancialSummary = async (financialSummaryRef) => {
-        const financialSummaryQuery = query(
-          financialSummaryRef,
-          orderBy("timestamp", "desc"),
-          limit(1)
-        );
-        const financialSummarySnapshot = await getDocs(financialSummaryQuery);
-        let financialData = [];
-        financialSummarySnapshot.forEach((financialDoc) => {
-          financialData.push(financialDoc.data());
-        });
-        return financialData;
-      };
-
-      COMPANY_LIST.forEach((company) => {
-        const companyRef = collection(db, company);
-        const companyQuery = query(companyRef, where("projectName", "==", projectNameFilter));
-
-        const unsubscribe = onSnapshot(companyQuery, async (querySnapshot) => {
-          for (const docSnapshot of querySnapshot.docs) {
-            const financialSummaryRef = collection(docSnapshot.ref, "financialSummary");
-            const financialData = await fetchLatestFinancialSummary(financialSummaryRef);
-
-            // Listen for new documents added
-            onSnapshot(
-              query(financialSummaryRef, orderBy("timestamp", "desc"), limit(1)),
-              (newFinancialSnapshot) => {
-                newFinancialSnapshot.docChanges().forEach((change) => {
-                  if (change.type === "added") {
-                    setData((prevData) =>
-                      prevData.map((item) =>
-                        item.companyName === company
-                          ? { ...item, financialSummary: [change.doc.data()] }
-                          : item
-                      )
-                    );
-                  }
-                });
-              }
-            );
-
-            const combinedData = {
-              ...docSnapshot.data(),
-              companyName: company,
-              financialSummary: financialData,
-            };
-            setData((prevData) => [...prevData, combinedData]);
-          }
-        });
-
-        unsubscribes.push(unsubscribe);
-      });
-
-      // Remember to clean up the listeners when the component is unmounted
-      return () => unsubscribes.forEach((unsubscribe) => unsubscribe());
-    };
-
-    const unsubscribe = loadData();
-    return () => unsubscribe();
-  }, []);
-
-  const handlePageChange = useCallback((event, value) => {
-    setPage(value);
-  }, []);
-
-  const handleRowsPerPageChange = useCallback((event) => {
-    setRowsPerPage(event.target.value);
-  }, []);
-
+const Page = ({ initialData }) => {
   return (
     <>
       <Head>
@@ -268,7 +25,7 @@ const Page = () => {
           <Stack spacing={3}>
             <Stack direction="row" justifyContent="space-between" spacing={4}>
               <Stack spacing={1}>
-                <Typography variant="h4">Projects</Typography>
+                <Typography variant="h4">TEST 01</Typography>
               </Stack>
               <div>
                 <Button
@@ -284,19 +41,8 @@ const Page = () => {
               </div>
             </Stack>
             <CustomersSearch />
-            <CustomersTable
-              // count={data.length}
-              projects={data}
-              // onDeselectAll={customersSelection.handleDeselectAll}
-              // onDeselectOne={customersSelection.handleDeselectOne}
-              // onPageChange={handlePageChange}
-              // onRowsPerPageChange={handleRowsPerPageChange}
-              // onSelectAll={customersSelection.handleSelectAll}
-              // onSelectOne={customersSelection.handleSelectOne}
-              // page={page}
-              // rowsPerPage={rowsPerPage}
-              // selected={customersSelection.selected}
-            />
+
+            <CustomersTable projects={initialData} />
           </Stack>
         </Container>
       </Box>
@@ -305,5 +51,56 @@ const Page = () => {
 };
 
 Page.getLayout = (page) => <DashboardLayout>{page}</DashboardLayout>;
+
+// This function runs on the server side and fetches the initial data
+export async function getServerSideProps() {
+  const COMPANY_LIST = ["fixus", "absb", "ilsb", "prsb", "jmsb"];
+  const projectNameFilter = "TEST 01";
+  let initialData = [];
+
+  const fetchLatestFinancialSummary = async (financialSummaryRef) => {
+    // Your fetchLatestFinancialSummary function with timestamp conversion
+    const financialSummaryQuery = query(
+      financialSummaryRef,
+      orderBy("timestamp", "desc"),
+      limit(1)
+    );
+    const financialSummarySnapshot = await getDocs(financialSummaryQuery);
+    let financialData = [];
+    financialSummarySnapshot.forEach((financialDoc) => {
+      const data = financialDoc.data();
+      // Convert the Firestore timestamp to a Unix timestamp
+      data.timestamp = data.timestamp.toMillis();
+      financialData.push(data);
+    });
+    return financialData;
+  };
+
+  for (const company of COMPANY_LIST) {
+    const companyRef = collection(db, company);
+    const companyQuery = query(companyRef, where("projectName", "==", projectNameFilter));
+    const companySnapshot = await getDocs(companyQuery);
+
+    for (const docSnapshot of companySnapshot.docs) {
+      const financialSummaryRef = collection(docSnapshot.ref, "financialSummary");
+      const financialData = await fetchLatestFinancialSummary(financialSummaryRef);
+
+      const combinedData = {
+        ...docSnapshot.data(),
+        companyName: company,
+        financialSummary: financialData,
+      };
+
+      initialData.push(combinedData);
+    }
+  }
+  console.log(initialData);
+
+  return {
+    props: {
+      initialData,
+    },
+  };
+}
 
 export default Page;
